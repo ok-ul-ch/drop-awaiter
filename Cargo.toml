@@ -11,3 +11,6 @@ keywords = ["async", "non-blocking", "futures"]
 
 [dependencies]
 futures = "0.3"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }

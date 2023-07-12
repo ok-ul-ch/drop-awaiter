@@ -1,4 +1,4 @@
-use std::{cd 
+use std::{
     pin::Pin,
     sync::{
         atomic::{AtomicUsize, Ordering},
@@ -89,4 +89,36 @@ impl Drop for DropNotifier {
 struct State {
     notifiers_count: AtomicUsize,
     awaiter_waker: AtomicWaker,
+}
+
+#[cfg(test)]
+mod tests {
+    use futures::future::{self};
+    use std::{sync::atomic::Ordering, time::Duration};
+    use tokio::pin;
+
+    #[tokio::test]
+    async fn test_awaiter() {
+        let (notifier_1, awaiter) = crate::spawn();
+        let notifier_2 = notifier_1.clone();
+        let notifier_3 = notifier_2.clone();
+
+        assert_eq!(3, awaiter.state.notifiers_count.load(Ordering::SeqCst));
+
+        drop(notifier_1);
+        drop(notifier_3);
+
+        assert_eq!(1, awaiter.state.notifiers_count.load(Ordering::SeqCst));
+
+        let sleep_fut = tokio::time::sleep(Duration::from_millis(1000));
+        pin!(sleep_fut);
+
+        match future::select(awaiter, sleep_fut).await {
+            future::Either::Left((_, _)) => panic!("Awaiter must not complete before sleep"),
+            future::Either::Right((_, awaiter)) => {
+                drop(notifier_2);
+                awaiter.await
+            }
+        };
+    }
 }
