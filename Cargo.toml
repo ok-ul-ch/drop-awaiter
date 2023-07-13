@@ -8,6 +8,7 @@ readme = "README.md"
 repository = "https://github.com/ok-ul-ch/drop_awaiter"
 categories = ["asynchronous"]
 keywords = ["async", "non-blocking", "futures"]
+description = "Library that allows you to asynchronously wait for something to be dropped"
 
 [dependencies]
 futures = "0.3"
