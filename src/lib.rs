@@ -9,9 +9,14 @@ use std::{
 
 use futures::{task::AtomicWaker, Future};
 
+/// Function that spawns pair [`DropNotifier`] and [`DropAwaiter`]
+/// Clone and pass Notifier further into your code.
+/// Once all Notifiers will be dropped, they will notify the Awaiter that it is time to wake up
+///
+/// Usage:
 /// ```
 /// async fn foo() {
-///     let (notifier_1, awaiter) = drop_awaiter::spawn();
+///     let (notifier_1, awaiter) = drop_awaiter::new();
 ///     
 ///     let notifier_2 = notifier_1.clone();
 ///
@@ -31,7 +36,7 @@ use futures::{task::AtomicWaker, Future};
 ///     awaiter.await
 /// }
 
-pub fn spawn() -> (DropNotifier, DropAwaiter) {
+pub fn new() -> (DropNotifier, DropAwaiter) {
     let state = Arc::new(State {
         awaiter_waker: AtomicWaker::new(),
         notifiers_count: AtomicUsize::new(1),
@@ -44,11 +49,12 @@ pub fn spawn() -> (DropNotifier, DropAwaiter) {
         DropAwaiter { state },
     )
 }
-
+#[derive(Debug)]
 pub struct DropAwaiter {
     state: Arc<State>,
 }
 
+#[derive(Debug)]
 pub struct DropNotifier {
     state: Arc<State>,
 }
@@ -86,6 +92,7 @@ impl Drop for DropNotifier {
     }
 }
 
+#[derive(Debug)]
 struct State {
     notifiers_count: AtomicUsize,
     awaiter_waker: AtomicWaker,
@@ -99,7 +106,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_awaiter() {
-        let (notifier_1, awaiter) = crate::spawn();
+        let (notifier_1, awaiter) = crate::new();
         let notifier_2 = notifier_1.clone();
         let notifier_3 = notifier_2.clone();
 
