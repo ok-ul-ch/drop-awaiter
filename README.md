@@ -3,7 +3,7 @@ Library that allows you to asynchronously wait for something to be dropped.
 
 ## Docs
 
-[Rustdoc](https://docs.rs/drop-awaiter/latest/drop-awaiter/)
+[Rustdoc](https://docs.rs/drop-awaiter/0.1.0/drop_awaiter/index.html)
 
 ## Examples
 
